@@ -1,0 +1,76 @@
+## Intro 
+
+This is a kaggle competition for predicting challenges, plays, or throw ins for the bundesliga. I chose to do some work on this project because I love the bundesliga and I also love computer vision. A majority of my time was spent on trying to understand the competition along with the scoring submission. This competition is difficult because the clips for scoring are very long and they require intervals to be stamped with a scored prediction but in thehidden test we aren't given the intervals. This makes the competition fair, albeit a little more difficult. 
+
+## Approach 
+
+My first thought is to simply get the labels properly identified, along with correct algorithm selection, get something running and then asses on performance. 
+
+Below is addiional context on the competition itself 
+
+## Goal of the Competition
+
+
+Goal! In this competition, you'll detect football (soccer) passes—including throw-ins and crosses—and challenges in original Bundesliga matches. You'll develop a computer vision model that can automatically classify these events in long video recordings.
+
+Your work will help scale the data collection process. Automatic event annotation could enable event data from currently unexplored competitions, like youth or semi-professional leagues or even training sessions.
+
+## Context
+
+What does it take to go pro in football (soccer)? From a young age, hopeful talents devote time, money, and training to the sport. Yet, while the next superstar is guaranteed to start off in youth or semi-professional leagues, these leagues often have the fewest resources to invest. This includes resources for the collection of event data which helps generate insights into the performance of the teams and players.
+
+Currently, event data is mostly collected manually by human operators, who gather data in several steps and through numerous personnel involved. This manual process has room for innovation as in its current shape and form it involves a lot of resources and multiple iterations/quality checks. As a result, event data collection is usually reserved for professional competitions only.
+
+Based in Frankfurt, the Deutsche Fußball Liga (DFL) manages Germany's professional football (soccer) leagues: Bundesliga and Bundesliga 2. DFL partners with the operator of one of the largest sports databases in the world, Sportec Solutions. They're responsible for the leagues' sports data and sports technology activities. In addition, Sportec Solutions provides services to global sports entities and media companies.
+
+Automatic event detection could provide event data faster and with greater depth. Having access to a broader range of competitions, match conditions and data scouts would be able to ensure no talented player is overlooked.
+
+## Evaluation 
+
+Submissions are evaluated on the average precision of detected events, averaged over timestamp error thresholds, averaged over event classes.
+
+Detections are matched to ground-truth events by class-specific error tolerances, with ambiguities resolved in order of decreasing confidence. The timestamp error tolerances, in seconds, for each class are:
+
+Challenge: [ 0.30, 0.40, 0.50, 0.60, 0.70 ]
+Play: [ 0.15, 0.20, 0.25, 0.30, 0.35 ]
+Throw-In: [ 0.15, 0.20, 0.25, 0.30, 0.35 ]
+You may find a Python implementation of the metric in this notebook: Competition Metric - DFL Event Detection AP.
+
+## Detailed Description
+Evaluation proceeds in four steps:
+
+Selection - Predictions not within a video's scoring intervals are dropped.
+Assignment - Predicted events are matched with ground-truth events.
+Scoring - Each group of predictions is scored against its corresponding group of ground-truth events via Average Precision.
+Reduction - The multiple AP scores are averaged to produce a single overall score.
+Selection
+With each video there is a defined set of scoring intervals giving the intervals of time over which zero or more ground-truth events might be annotated in that video. A prediction is only evaluated if it falls within a scoring interval. These scoring intervals were chosen to improve the fairness of evaluation by, for instance, ignoring edge-cases or ambiguous events.
+
+For reference, we provide the scoring intervals for the training data. The scoring intervals for the test data will not be available to your model during evaluation, however.
+
+## Assignment
+
+For each set of predictions and ground-truths within the same event x tolerance x video_id group, we match each ground-truth to the highest-confidence unmatched prediction occurring within the allowed tolerance.
+
+Some ground-truths may not be matched to a prediction and some predictions may not be matched to a ground-truth. They will still be accounted for in the scoring, however.
+
+## Scoring
+Collecting the events within each video_id, we compute an Average Precision score for each event x tolerance group. The average precision score is the area under the precision-recall curve generated by decreasing confidence score thresholds over the predictions. In this calculation, matched predictions over the threshold are scored as TP and unmatched predictions as FP. Unmatched ground-truths are scored as FN.
+
+## Reduction
+The final score is the average of the above AP scores, first averaged over tolerance, then over event.
+
+## Submission File
+For each video indicated by video_id, predict each event occurring in that video by giving the event type and the time of occurrence (in seconds) as well as a confidence score for that event.
+
+The file should contain a header and have the following format:
+
+video_id,time,event,score
+13bfe65e_0,100.0,play,0.0
+13bfe65e_0,110.5,challenge,0.07
+13bfe65e_1,90.25,throwin,0.13
+13bfe65e_1,105.0,play,0.2
+40f283bc_0,100.0,challenge,0.27
+40f283bc_0,110.5,throwin,0.33
+...
+Only predictions occurring within a video's defined scoring intervals will be scored; the metric ignores any predictions occurring outside of these scoring intervals. You will not be given the scoring intervals for videos in the test set.
